@@ -8,6 +8,10 @@ function MessageList() {
   const messagesEndRef = useRef(null);
   const [displayMessages, setDisplayMessages] = useState([]);
   const [key, setKey] = useState(0); // Force re-render key
+  const [streamedResponses, setStreamedResponses] = useState({
+    deepseek: { content: '', isComplete: false },
+    nova: { content: '', isComplete: false }
+  });
 
   // Force re-render when messages change
   useEffect(() => {
@@ -15,6 +19,13 @@ function MessageList() {
     setDisplayMessages([...messages]);
     setKey(prevKey => prevKey + 1); // Force re-render
   }, [messages]);
+
+  // Keep track of streamed responses to show them even after waitingForResponse becomes false
+  useEffect(() => {
+    if (currentResponses.deepseek.content || currentResponses.nova.content) {
+      setStreamedResponses(currentResponses);
+    }
+  }, [currentResponses]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -31,11 +42,13 @@ function MessageList() {
     displayMessages,
     messages,
     currentResponses,
-    waitingForResponse
+    waitingForResponse,
+    streamedResponses
   });
 
   return (
     <div className="message-list" key={key}>
+      {/* Regular messages */}
       {displayMessages.map((message, index) => (
         <div 
           key={`${index}-${message.timestamp || index}`} 
@@ -90,6 +103,31 @@ function MessageList() {
             </div>
           )}
         </>
+      )}
+
+      {/* Show transition messages during the brief period between completion and adding to history */}
+      {!waitingForResponse && streamedResponses.deepseek.content && 
+       !displayMessages.some(m => m.modelId === 'deepseek' && m.content === streamedResponses.deepseek.content) && (
+        <div className="message assistant-message">
+          <div className="message-content assistant deepseek">
+            <div className="message-header">DeepSeek</div>
+            <div className="message-text">
+              <ReactMarkdown>{streamedResponses.deepseek.content}</ReactMarkdown>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!waitingForResponse && streamedResponses.nova.content && 
+       !displayMessages.some(m => m.modelId === 'nova' && m.content === streamedResponses.nova.content) && (
+        <div className="message assistant-message">
+          <div className="message-content assistant nova">
+            <div className="message-header">Nova</div>
+            <div className="message-text">
+              <ReactMarkdown>{streamedResponses.nova.content}</ReactMarkdown>
+            </div>
+          </div>
+        </div>
       )}
 
       <div ref={messagesEndRef} />

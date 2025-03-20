@@ -136,24 +136,27 @@ export function ChatProvider({ children }) {
         console.warn('Missing final content for one or both models');
       }
       
-      // Reset waiting state and current responses
-      setWaitingForResponse(false);
-      setCurrentResponses({
-        deepseek: { content: '', isComplete: false },
-        nova: { content: '', isComplete: false }
-      });
-      
-      // Reset final responses
-      setFinalResponses({
-        deepseek: '',
-        nova: ''
-      });
-      
-      // Reset the ref
-      finalResponsesRef.current = {
-        deepseek: '',
-        nova: ''
-      };
+      // Wait a bit before resetting the state to ensure the UI has time to update
+      setTimeout(() => {
+        // Reset waiting state and current responses
+        setWaitingForResponse(false);
+        setCurrentResponses({
+          deepseek: { content: '', isComplete: false },
+          nova: { content: '', isComplete: false }
+        });
+        
+        // Reset final responses
+        setFinalResponses({
+          deepseek: '',
+          nova: ''
+        });
+        
+        // Reset the ref
+        finalResponsesRef.current = {
+          deepseek: '',
+          nova: ''
+        };
+      }, 500);
     });
 
     setSocket(socketInstance);
