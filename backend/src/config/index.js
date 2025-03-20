@@ -12,14 +12,14 @@ module.exports = {
   },
   models: {
     deepseek: {
-      modelId: process.env.DEEPSEEK_MODEL_ID || 'deepseek.chat-72b',
+      modelId: process.env.DEEPSEEK_MODEL_ID || 'us.deepseek.r1-v1:0',
       parameters: {
         temperature: parseFloat(process.env.DEEPSEEK_TEMPERATURE || '0.7'),
         maxTokens: parseInt(process.env.DEEPSEEK_MAX_TOKENS || '1000')
       }
     },
     nova: {
-      modelId: process.env.NOVA_MODEL_ID || 'us.amazon.nova-lite-v1:0',
+      modelId: process.env.NOVA_MODEL_ID || 'us.amazon.nova-pro-v1:0',
       parameters: {
         temperature: parseFloat(process.env.NOVA_TEMPERATURE || '0.7'),
         maxTokens: parseInt(process.env.NOVA_MAX_TOKENS || '1000')

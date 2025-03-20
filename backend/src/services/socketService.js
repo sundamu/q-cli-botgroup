@@ -77,6 +77,8 @@ const processModelsInSequence = async (socket, sessionId, history) => {
     
     // Process each model in sequence
     for (const model of models) {
+      console.log(`Processing model ${model.id} with modelId ${model.config.modelId}`);
+      
       const modelResponse = await processModel(socket, sessionId, model, history);
       
       // Add model response to history for next model
@@ -140,19 +142,21 @@ const processModel = async (socket, sessionId, model, history) => {
       
       console.log(`Complete response from ${model.id}:`, completeResponse);
       
-      // Check if response is empty
-      if (!completeResponse || completeResponse.trim() === '') {
-        console.warn(`Warning: Empty response from ${model.id}`);
-        completeResponse = `No response was generated from ${model.id}. This could be due to an issue with the model configuration or the input provided.`;
-        
-        // Send a manual chunk with the error message
-        socket.emit('receive_message', {
-          modelId: model.id,
-          message: completeResponse,
-          isComplete: false,
-          sessionId,
-          order: model.order
-        });
+      // Check if response is empty or contains an error message
+      if (!completeResponse || completeResponse.trim() === '' || completeResponse.startsWith('Error:')) {
+        console.warn(`Warning: Empty or error response from ${model.id}`);
+        if (!completeResponse || completeResponse.trim() === '') {
+          completeResponse = `No response was generated from ${model.id}. This could be due to an issue with the model configuration or the input provided.`;
+          
+          // Send a manual chunk with the error message
+          socket.emit('receive_message', {
+            modelId: model.id,
+            message: completeResponse,
+            isComplete: false,
+            sessionId,
+            order: model.order
+          });
+        }
       }
       
       // Send final message indicating completion
@@ -174,7 +178,28 @@ const processModel = async (socket, sessionId, model, history) => {
       resolve(completeResponse);
     } catch (error) {
       console.error(`Error processing model ${model.id}:`, error);
-      reject(error);
+      
+      // Send error message to client
+      const errorMessage = `Error: ${error.message || 'An unknown error occurred'}`;
+      socket.emit('receive_message', {
+        modelId: model.id,
+        message: errorMessage,
+        isComplete: false,
+        sessionId,
+        order: model.order
+      });
+      
+      // Send completion message
+      socket.emit('receive_message', {
+        modelId: model.id,
+        message: '',
+        isComplete: true,
+        sessionId,
+        order: model.order
+      });
+      
+      // Resolve with error message so the sequence can continue
+      resolve(errorMessage);
     }
   });
 };
