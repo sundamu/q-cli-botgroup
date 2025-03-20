@@ -1,0 +1,11 @@
+.chat-page {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .chat-page {
+    flex-direction: column;
+  }
+}
