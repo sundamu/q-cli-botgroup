@@ -4,6 +4,7 @@
   overflow: hidden;
 }
 
+/* For mobile devices */
 @media (max-width: 768px) {
   .chat-page {
     flex-direction: column;

@@ -47,7 +47,7 @@
 }
 
 .message-content.user {
-  background-color: var(--secondary-color);
+  background-color: #007bff;
   color: white;
 }
 
@@ -71,19 +71,19 @@
 
 /* Model-specific styling */
 .message-content.deepseek {
-  border-left: 4px solid var(--deepseek-color);
+  border-left: 4px solid #6a0dad;
 }
 
 .message-content.deepseek .message-header {
-  color: var(--deepseek-color);
+  color: #6a0dad;
 }
 
 .message-content.nova {
-  border-left: 4px solid var(--nova-color);
+  border-left: 4px solid #ff6b6b;
 }
 
 .message-content.nova .message-header {
-  color: var(--nova-color);
+  color: #ff6b6b;
 }
 
 /* Code block styling */

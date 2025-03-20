@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useChat } from '../contexts/ChatContext';
 import ReactMarkdown from 'react-markdown';
 import './MessageList.css';
@@ -6,21 +6,39 @@ import './MessageList.css';
 function MessageList() {
   const { messages, currentResponses, waitingForResponse } = useChat();
   const messagesEndRef = useRef(null);
+  const [displayMessages, setDisplayMessages] = useState([]);
+  const [key, setKey] = useState(0); // Force re-render key
+
+  // Force re-render when messages change
+  useEffect(() => {
+    console.log("Messages updated:", messages);
+    setDisplayMessages([...messages]);
+    setKey(prevKey => prevKey + 1); // Force re-render
+  }, [messages]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
+    console.log("Display messages or responses updated:", { displayMessages, currentResponses });
     scrollToBottom();
-  }, [messages, currentResponses]);
+  }, [displayMessages, currentResponses, key]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Debug render
+  console.log("Rendering MessageList with key:", key, {
+    displayMessages,
+    messages,
+    currentResponses,
+    waitingForResponse
+  });
+
   return (
-    <div className="message-list">
-      {messages.map((message, index) => (
+    <div className="message-list" key={key}>
+      {displayMessages.map((message, index) => (
         <div 
-          key={index} 
+          key={`${index}-${message.timestamp || index}`} 
           className={`message ${message.role === 'user' ? 'user-message' : 'assistant-message'}`}
         >
           {message.role === 'user' ? (
