@@ -29,25 +29,25 @@ const formatMessagesForClaude = (messages) => {
 };
 
 /**
- * Format messages for chat-based models (DeepSeek)
+ * Format messages for DeepSeek models
  * @param {Array} messages - Array of message objects
- * @returns {Array} - Formatted messages for chat models
+ * @returns {Array} - Formatted messages for DeepSeek
  */
-const formatMessagesForChat = (messages) => {
+const formatMessagesForDeepSeek = (messages) => {
+  // DeepSeek has a specific format requirement
   return messages.map(message => {
-    // Convert 'user' and 'assistant' roles to match expected format
-    let role = message.role;
-    if (role === 'assistant' && message.modelId) {
-      // Add model identifier to assistant messages
+    if (message.role === 'user') {
       return {
-        role: 'assistant',
-        content: `[${message.modelId}]: ${message.content}`
-      };
-    } else {
-      return {
-        role: message.role,
+        role: 'user',
         content: message.content
       };
+    } else if (message.role === 'assistant') {
+      return {
+        role: 'assistant',
+        content: message.content
+      };
+    } else {
+      return message;
     }
   });
 };
@@ -105,9 +105,24 @@ const generateStreamingResponse = async (modelId, messages, parameters, onChunk)
         })
       };
     } 
-    // Check if the model is DeepSeek
+    // Check if the model is DeepSeek R1
+    else if (modelId.includes('deepseek.r1')) {
+      // DeepSeek R1 specific format
+      request = {
+        modelId,
+        contentType: 'application/json',
+        accept: 'application/json',
+        body: JSON.stringify({
+          prompt: messages[messages.length - 1].content,
+          max_tokens: parameters.maxTokens,
+          temperature: parameters.temperature,
+          stream: true
+        })
+      };
+    }
+    // Check if the model is DeepSeek Chat
     else if (modelId.includes('deepseek')) {
-      const formattedMessages = formatMessagesForChat(messages);
+      const formattedMessages = formatMessagesForDeepSeek(messages);
       
       request = {
         modelId,
@@ -201,28 +216,78 @@ const generateStreamingResponse = async (modelId, messages, parameters, onChunk)
         // Handle different response formats based on model
         let textChunk = '';
         
+        console.log(`Processing chunk for ${modelId}:`, JSON.stringify(parsedChunk, null, 2));
+        
         if (modelId.includes('anthropic.claude') && parsedChunk.completion) {
           textChunk = parsedChunk.completion;
-        } else if (modelId.includes('deepseek') && parsedChunk.outputs && parsedChunk.outputs.length > 0) {
-          textChunk = parsedChunk.outputs[0].text || '';
-        } else if (modelId.includes('nova') && parsedChunk.contentBlockDelta && parsedChunk.contentBlockDelta.delta) {
-          // Handle Nova's response format
-          textChunk = parsedChunk.contentBlockDelta.delta.text || '';
+          console.log(`Claude chunk extracted: ${textChunk}`);
+        } else if (modelId.includes('deepseek.r1')) {
+          // DeepSeek R1 format
+          if (parsedChunk.choices && parsedChunk.choices.length > 0) {
+            textChunk = parsedChunk.choices[0].text || '';
+            console.log(`DeepSeek R1 chunk from choices: ${textChunk}`);
+          } else {
+            console.log(`DeepSeek R1 chunk format not recognized:`, JSON.stringify(parsedChunk));
+          }
+        } else if (modelId.includes('deepseek')) {
+          // Other DeepSeek models (chat models)
+          if (parsedChunk.outputs && parsedChunk.outputs.length > 0) {
+            textChunk = parsedChunk.outputs[0].text || '';
+            console.log(`DeepSeek chat chunk from outputs: ${textChunk}`);
+          } else if (parsedChunk.delta && parsedChunk.delta.text) {
+            textChunk = parsedChunk.delta.text;
+            console.log(`DeepSeek chat chunk from delta.text: ${textChunk}`);
+          } else if (parsedChunk.text) {
+            textChunk = parsedChunk.text;
+            console.log(`DeepSeek chat chunk from text: ${textChunk}`);
+          } else if (parsedChunk.content) {
+            textChunk = parsedChunk.content;
+            console.log(`DeepSeek chat chunk from content: ${textChunk}`);
+          } else {
+            console.log(`DeepSeek chat chunk format not recognized:`, JSON.stringify(parsedChunk));
+          }
+        } else if (modelId.includes('nova')) {
+          // More detailed handling for Nova
+          if (parsedChunk.contentBlockDelta && parsedChunk.contentBlockDelta.delta) {
+            textChunk = parsedChunk.contentBlockDelta.delta.text || '';
+            console.log(`Nova chunk from contentBlockDelta: ${textChunk}`);
+          } else if (parsedChunk.delta && parsedChunk.delta.text) {
+            textChunk = parsedChunk.delta.text;
+            console.log(`Nova chunk from delta.text: ${textChunk}`);
+          } else if (parsedChunk.text) {
+            textChunk = parsedChunk.text;
+            console.log(`Nova chunk from text: ${textChunk}`);
+          } else if (parsedChunk.content) {
+            textChunk = parsedChunk.content;
+            console.log(`Nova chunk from content: ${textChunk}`);
+          } else {
+            console.log(`Nova chunk format not recognized:`, JSON.stringify(parsedChunk));
+          }
         } else if (modelId.includes('titan') && parsedChunk.outputText) {
           textChunk = parsedChunk.outputText;
+          console.log(`Titan chunk extracted: ${textChunk}`);
         } else if (parsedChunk.generation) {
           textChunk = parsedChunk.generation;
+          console.log(`Generation chunk extracted: ${textChunk}`);
         } else if (parsedChunk.text) {
           textChunk = parsedChunk.text;
+          console.log(`Text chunk extracted: ${textChunk}`);
         } else if (parsedChunk.delta && parsedChunk.delta.content) {
           textChunk = parsedChunk.delta.content;
+          console.log(`Delta content chunk extracted: ${textChunk}`);
         } else if (parsedChunk.content) {
           textChunk = parsedChunk.content;
+          console.log(`Content chunk extracted: ${textChunk}`);
+        } else {
+          console.log(`No recognized format for chunk from ${modelId}:`, JSON.stringify(parsedChunk));
         }
         
         if (textChunk) {
           completeResponse += textChunk;
           onChunk(textChunk);
+          console.log(`Sending chunk from ${modelId}: "${textChunk}"`);
+        } else {
+          console.log(`Empty chunk from ${modelId}, not sending`);
         }
       }
     }
@@ -235,5 +300,7 @@ const generateStreamingResponse = async (modelId, messages, parameters, onChunk)
 };
 
 module.exports = {
-  generateStreamingResponse
+  generateStreamingResponse,
+  formatMessagesForDeepSeek,
+  formatMessagesForNova
 };

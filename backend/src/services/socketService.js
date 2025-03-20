@@ -116,6 +116,9 @@ const processModel = async (socket, sessionId, model, history) => {
     try {
       let completeResponse = '';
       
+      console.log(`Processing model ${model.id} with modelId ${model.config.modelId}`);
+      console.log(`History for ${model.id}:`, JSON.stringify(history, null, 2));
+      
       // Generate streaming response
       const response = await generateStreamingResponse(
         model.config.modelId,
@@ -134,6 +137,23 @@ const processModel = async (socket, sessionId, model, history) => {
       );
       
       completeResponse = response;
+      
+      console.log(`Complete response from ${model.id}:`, completeResponse);
+      
+      // Check if response is empty
+      if (!completeResponse || completeResponse.trim() === '') {
+        console.warn(`Warning: Empty response from ${model.id}`);
+        completeResponse = `No response was generated from ${model.id}. This could be due to an issue with the model configuration or the input provided.`;
+        
+        // Send a manual chunk with the error message
+        socket.emit('receive_message', {
+          modelId: model.id,
+          message: completeResponse,
+          isComplete: false,
+          sessionId,
+          order: model.order
+        });
+      }
       
       // Send final message indicating completion
       socket.emit('receive_message', {
