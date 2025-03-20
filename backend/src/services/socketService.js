@@ -8,12 +8,11 @@ const config = require('../config');
  */
 const setupSocketHandlers = (io) => {
   io.on('connection', (socket) => {
+    // Only log connection ID for debugging purposes
     console.log(`Client connected: ${socket.id}`);
 
-    // Handle client disconnection
-    socket.on('disconnect', () => {
-      console.log(`Client disconnected: ${socket.id}`);
-    });
+    // Handle client disconnection - no need to log every disconnect
+    socket.on('disconnect', () => {});
 
     // Handle incoming messages
     socket.on('send_message', async (data) => {
@@ -77,8 +76,6 @@ const processModelsInSequence = async (socket, sessionId, history) => {
     
     // Process each model in sequence
     for (const model of models) {
-      console.log(`Processing model ${model.id} with modelId ${model.config.modelId}`);
-      
       const modelResponse = await processModel(socket, sessionId, model, history);
       
       // Add model response to history for next model
@@ -118,9 +115,6 @@ const processModel = async (socket, sessionId, model, history) => {
     try {
       let completeResponse = '';
       
-      console.log(`Processing model ${model.id} with modelId ${model.config.modelId}`);
-      console.log(`History for ${model.id}:`, JSON.stringify(history, null, 2));
-      
       // Generate streaming response
       const response = await generateStreamingResponse(
         model.config.modelId,
@@ -139,8 +133,6 @@ const processModel = async (socket, sessionId, model, history) => {
       );
       
       completeResponse = response;
-      
-      console.log(`Complete response from ${model.id}:`, completeResponse);
       
       // Check if response is empty or contains an error message
       if (!completeResponse || completeResponse.trim() === '' || completeResponse.startsWith('Error:')) {

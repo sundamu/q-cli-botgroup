@@ -55,9 +55,6 @@ const formatMessagesForConverse = (messages) => {
  */
 const generateStreamingResponse = async (modelId, messages, parameters, onChunk) => {
   try {
-    console.log(`Generating streaming response for model ${modelId}`);
-    console.log(`Messages:`, JSON.stringify(messages, null, 2));
-    
     // Format messages for Converse API
     const formattedMessages = formatMessagesForConverse(messages);
     
@@ -72,8 +69,6 @@ const generateStreamingResponse = async (modelId, messages, parameters, onChunk)
       }
     };
     
-    console.log(`Request for model ${modelId}:`, JSON.stringify(request, null, 2));
-    
     // Create command for streaming response
     const command = new ConverseStreamCommand(request);
     
@@ -87,7 +82,6 @@ const generateStreamingResponse = async (modelId, messages, parameters, onChunk)
       if (chunk.message) {
         // Process message chunk
         const messageChunk = chunk.message;
-        console.log(`Message chunk from ${modelId}:`, JSON.stringify(messageChunk, null, 2));
         
         // Extract text from content blocks
         if (messageChunk.content && messageChunk.content.length > 0) {
@@ -95,28 +89,23 @@ const generateStreamingResponse = async (modelId, messages, parameters, onChunk)
             if (contentBlock.text) {
               completeResponse += contentBlock.text;
               onChunk(contentBlock.text);
-              console.log(`Sending text chunk from ${modelId}: "${contentBlock.text}"`);
             }
           }
         }
       } else if (chunk.contentBlockDelta) {
         // Process content block delta
         const delta = chunk.contentBlockDelta;
-        console.log(`Content block delta from ${modelId}:`, JSON.stringify(delta, null, 2));
         
         if (delta.delta && delta.delta.text) {
           completeResponse += delta.delta.text;
           onChunk(delta.delta.text);
-          console.log(`Sending delta text chunk from ${modelId}: "${delta.delta.text}"`);
         }
       } else if (chunk.bytes) {
         // Process raw bytes (should not happen with Converse API)
         const chunkData = Buffer.from(chunk.bytes).toString();
-        console.log(`Raw bytes chunk from ${modelId}:`, chunkData);
         
         try {
           const parsedChunk = JSON.parse(chunkData);
-          console.log(`Parsed chunk from ${modelId}:`, JSON.stringify(parsedChunk, null, 2));
           
           // Extract text based on model-specific formats
           let textChunk = '';
@@ -130,17 +119,12 @@ const generateStreamingResponse = async (modelId, messages, parameters, onChunk)
           if (textChunk) {
             completeResponse += textChunk;
             onChunk(textChunk);
-            console.log(`Sending parsed text chunk from ${modelId}: "${textChunk}"`);
           }
         } catch (e) {
-          console.warn('Could not parse chunk as JSON:', chunkData);
+          console.warn('Could not parse chunk as JSON');
         }
-      } else {
-        console.log(`Unknown chunk format from ${modelId}:`, JSON.stringify(chunk, null, 2));
       }
     }
-    
-    console.log(`Complete response from ${modelId}:`, completeResponse);
     
     // Check if response is empty
     if (!completeResponse || completeResponse.trim() === '') {
