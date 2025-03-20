@@ -49,7 +49,7 @@ The project consists of two main components:
    cp .env.example .env
    ```
 
-4. Edit `.env` with your AWS credentials and configuration
+4. Edit `.env` with your configuration
 
 5. Start the backend server:
    ```
@@ -87,15 +87,14 @@ The project consists of two main components:
 4. Type your message and send
 5. View responses from both DeepSeek and Nova models in sequence
 
-## AWS Bedrock Configuration
+## AWS Credentials
 
-The application uses AWS Bedrock to access AI models. You need to configure:
+The application uses the default AWS credential provider chain, which will automatically look for credentials in the following order:
+1. Environment variables
+2. Shared credentials file (`~/.aws/credentials`)
+3. EC2 instance profile or IAM role (if running on AWS)
 
-- AWS credentials with Bedrock access
-- Model IDs for DeepSeek and Nova
-- Model parameters (temperature, max tokens)
-
-See the `.env.example` file in the backend directory for configuration options.
+No explicit credential configuration is needed in the application.
 
 ## Development
 

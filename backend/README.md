@@ -38,7 +38,7 @@ backend/
    ```
    cp .env.example .env
    ```
-4. Edit `.env` with your AWS credentials and other configuration
+4. Edit `.env` with your configuration
 5. Start the server:
    ```
    npm start
@@ -50,11 +50,16 @@ backend/
 - `JWT_SECRET`: Secret key for JWT token generation
 - `AUTH_PASSWORD`: Password for authentication
 - `AWS_REGION`: AWS region for Bedrock
-- `AWS_ACCESS_KEY_ID`: AWS access key
-- `AWS_SECRET_ACCESS_KEY`: AWS secret key
-- `DEEPSEEK_MODEL_ID`: AWS Bedrock model ID for DeepSeek
-- `NOVA_MODEL_ID`: AWS Bedrock model ID for Nova
-- Model parameters for temperature and token limits
+- Model IDs and parameters for temperature and token limits
+
+## AWS Credentials
+
+The application uses the default AWS credential provider chain, which will automatically look for credentials in the following order:
+1. Environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
+2. Shared credentials file (`~/.aws/credentials`)
+3. EC2 instance profile or IAM role (if running on AWS)
+
+No explicit credential configuration is needed in the application.
 
 ## API Endpoints
 

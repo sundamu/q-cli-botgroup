@@ -1,13 +1,11 @@
 const { BedrockRuntimeClient, InvokeModelWithResponseStreamCommand } = require('@aws-sdk/client-bedrock-runtime');
 const config = require('../config');
 
-// Initialize AWS Bedrock client
+// Initialize AWS Bedrock client using default credential provider chain
+// This will automatically use credentials from environment variables, shared credential files,
+// or EC2 instance profiles/IAM roles
 const bedrockClient = new BedrockRuntimeClient({
-  region: config.aws.region,
-  credentials: {
-    accessKeyId: config.aws.credentials.accessKeyId,
-    secretAccessKey: config.aws.credentials.secretAccessKey
-  }
+  region: config.aws.region
 });
 
 /**
