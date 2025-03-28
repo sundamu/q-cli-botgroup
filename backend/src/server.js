@@ -24,6 +24,15 @@ const io = socketIo(server, {
   }
 });
 
+// Add a simple health check endpoint
+app.get('/api', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Backend service is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
