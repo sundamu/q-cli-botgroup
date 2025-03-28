@@ -37,7 +37,7 @@ export function ChatProvider({ children }) {
   useEffect(() => {
     if (!isAuthenticated || !token) return;
 
-    const socketInstance = io(process.env.REACT_APP_API_URL || 'http://localhost:3001', {
+    const socketInstance = io(process.env.REACT_APP_API_URL || '', {
       query: { token }
     });
 
