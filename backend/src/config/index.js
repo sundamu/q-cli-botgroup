@@ -3,8 +3,8 @@ require('dotenv').config();
 module.exports = {
   server: {
     port: process.env.PORT || 3001,
-    jwtSecret: process.env.JWT_SECRET || 'default_jwt_secret_key',
-    authPassword: process.env.AUTH_PASSWORD || 'password123'
+    jwtSecret: process.env.JWT_SECRET || '',
+    authPassword: process.env.AUTH_PASSWORD || ''
   },
   aws: {
     region: process.env.AWS_REGION || 'us-east-1'
