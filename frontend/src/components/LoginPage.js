@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 
 function LoginPage() {
@@ -7,6 +8,7 @@ function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +22,10 @@ function LoginPage() {
       setError('');
       const result = await login(password);
       
-      if (!result.success) {
+      if (result.success) {
+        // Redirect to chat page on successful login
+        navigate('/chat');
+      } else {
         setError(result.message || 'Login failed');
       }
     } catch (error) {
