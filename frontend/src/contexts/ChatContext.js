@@ -37,9 +37,9 @@ export function ChatProvider({ children }) {
   useEffect(() => {
     if (!isAuthenticated || !token) return;
 
-    const socketInstance = io(process.env.SOCKET_IO_URL || '', {
+    const socketInstance = io(process.env.REACT_APP_SOCKET_IO_URL || '', {
       query: { token },
-      path: process.env.SOCKET_IO_PATH || undefined
+      path: process.env.REACT_APP_SOCKET_IO_PATH || undefined
     });
 
     socketInstance.on('connect', () => {
