@@ -58,7 +58,7 @@ export function ChatProvider({ children }) {
     });
 
     socketInstance.on('receive_message', (data) => {
-      const { modelId, message, isComplete, order } = data;
+      const { modelId, message, isComplete } = data;
       
       console.log(`Received message from ${modelId}:`, message);
       
@@ -183,10 +183,8 @@ export function ChatProvider({ children }) {
       // If there are sessions, set the first one as current
       if (sessionsData.sessions.length > 0) {
         await selectSession(sessionsData.sessions[0].id);
-      } else {
-        // If no sessions, create a new one
-        await createNewSession();
       }
+      // No longer automatically creating a new session
     } catch (error) {
       console.error('Failed to load sessions:', error);
     } finally {
