@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { io } from 'socket.io-client';
-import { createSession, getSessions, getSessionHistory } from '../services/api';
+import { createSession, getSessionHistory } from '../services/api';
 
 const ChatContext = createContext();
 
@@ -166,31 +166,6 @@ export function ChatProvider({ children }) {
       socketInstance.disconnect();
     };
   }, [isAuthenticated, token]);
-
-  // Load sessions when authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadSessions();
-    }
-  }, [isAuthenticated]);
-
-  const loadSessions = async () => {
-    try {
-      setIsLoading(true);
-      const sessionsData = await getSessions();
-      setSessions(sessionsData.sessions);
-      
-      // If there are sessions, set the first one as current
-      if (sessionsData.sessions.length > 0) {
-        await selectSession(sessionsData.sessions[0].id);
-      }
-      // No longer automatically creating a new session
-    } catch (error) {
-      console.error('Failed to load sessions:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const createNewSession = async () => {
     try {
