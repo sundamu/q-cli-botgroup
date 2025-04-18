@@ -70,20 +70,20 @@
 }
 
 /* Model-specific styling */
-.message-content.deepseek {
+.message-content.deepseek1 {
   border-left: 4px solid #6a0dad;
 }
 
-.message-content.deepseek .message-header {
+.message-content.deepseek1 .message-header {
   color: #6a0dad;
 }
 
-.message-content.nova {
-  border-left: 4px solid #ff6b6b;
+.message-content.deepseek2 {
+  border-left: 4px solid #4a90e2;
 }
 
-.message-content.nova .message-header {
-  color: #ff6b6b;
+.message-content.deepseek2 .message-header {
+  color: #4a90e2;
 }
 
 /* Code block styling */

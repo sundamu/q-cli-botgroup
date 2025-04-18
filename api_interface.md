@@ -53,11 +53,11 @@
 - **数据格式**:
   ```json
   {
-    "modelId": "模型标识符(deepseek/nova)",
+    "modelId": "模型标识符(deepseek1/deepseek2)",
     "message": "模型生成的消息片段",
     "isComplete": false,
     "sessionId": "当前会话ID",
-    "order": 1  // 模型响应顺序：DeepSeek=1, Nova=2
+    "order": 1  // 模型响应顺序：DeepSeek 1=1, DeepSeek 2=2
   }
   ```
   注：`isComplete`为`false`表示这是流式响应的一部分，为`true`表示该模型的响应已完成
@@ -127,13 +127,13 @@
       },
       {
         "role": "assistant",
-        "modelId": "deepseek",
-        "content": "DeepSeek模型响应"
+        "modelId": "deepseek1",
+        "content": "DeepSeek 1模型响应"
       },
       {
         "role": "assistant",
-        "modelId": "nova",
-        "content": "Nova模型响应"
+        "modelId": "deepseek2",
+        "content": "DeepSeek 2模型响应"
       }
     ]
   }
@@ -159,15 +159,15 @@
 ### 模型配置
 ```json
 {
-  "deepseek": {
+  "deepseek1": {
     "modelId": "AWS Bedrock上DeepSeek模型的ID",
     "parameters": {
       "temperature": 0.7,
       "maxTokens": 1000
     }
   },
-  "nova": {
-    "modelId": "AWS Bedrock上Nova模型的ID",
+  "deepseek2": {
+    "modelId": "AWS Bedrock上DeepSeek模型的ID",
     "parameters": {
       "temperature": 0.7,
       "maxTokens": 1000
@@ -203,7 +203,7 @@
    - 前端接收到片段后实时更新UI
 
 2. **串行响应机制**：
-   - 后端按固定顺序串行调用两个模型：先DeepSeek，再Nova
+   - 后端按固定顺序串行调用两个模型：先DeepSeek 1，再DeepSeek 2
    - 每个模型完成响应后，才开始调用下一个模型
    - 前端为每个模型预留显示区域
    - 每个模型的响应独立显示
@@ -212,4 +212,10 @@
    - 后端维护完整的对话历史
    - 每次调用模型时，传入完整的对话历史作为上下文
    - 后续模型的上下文包含前面模型的响应
-   - 例如：Nova模型的上下文包含DeepSeek的响应
+   - 例如：DeepSeek 2模型的上下文包含DeepSeek 1的响应
+
+
+
+
+
+

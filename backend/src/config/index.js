@@ -11,18 +11,18 @@ module.exports = {
     // No explicit credentials - will use default credential provider chain
   },
   models: {
-    deepseek: {
-      modelId: process.env.DEEPSEEK_MODEL_ID || 'us.deepseek.r1-v1:0',
+    deepseek1: {
+      modelId: process.env.DEEPSEEK1_MODEL_ID || 'us.deepseek.r1-v1:0',
       parameters: {
-        temperature: parseFloat(process.env.DEEPSEEK_TEMPERATURE || '0.7'),
-        maxTokens: parseInt(process.env.DEEPSEEK_MAX_TOKENS || '1000')
+        temperature: parseFloat(process.env.DEEPSEEK1_TEMPERATURE || '0.7'),
+        maxTokens: parseInt(process.env.DEEPSEEK1_MAX_TOKENS || '1000')
       }
     },
-    nova: {
-      modelId: process.env.NOVA_MODEL_ID || 'us.amazon.nova-lite-v1:0',
+    deepseek2: {
+      modelId: process.env.DEEPSEEK2_MODEL_ID || 'us.deepseek.r1-v1:0',
       parameters: {
-        temperature: parseFloat(process.env.NOVA_TEMPERATURE || '0.7'),
-        maxTokens: parseInt(process.env.NOVA_MAX_TOKENS || '1000')
+        temperature: parseFloat(process.env.DEEPSEEK2_TEMPERATURE || '0.7'),
+        maxTokens: parseInt(process.env.DEEPSEEK2_MAX_TOKENS || '1000')
       }
     }
   }

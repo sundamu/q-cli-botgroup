@@ -65,7 +65,21 @@ const getSessionHistory = (req, res) => {
       });
     }
     
-    res.status(200).json({ history });
+    // 确保所有消息都有时间戳
+    const processedHistory = history.map(msg => {
+      if (!msg.timestamp) {
+        msg.timestamp = new Date().toISOString();
+      }
+      return msg;
+    });
+    
+    // 按时间戳排序消息
+    const sortedHistory = [...processedHistory].sort((a, b) => {
+      return new Date(a.timestamp) - new Date(b.timestamp);
+    });
+    
+    console.log(`返回会话 ${sessionId} 的历史记录，共 ${sortedHistory.length} 条消息`);
+    res.status(200).json({ history: sortedHistory });
   } catch (error) {
     console.error('Error getting session history:', error);
     res.status(500).json({

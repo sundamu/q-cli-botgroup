@@ -29,16 +29,18 @@ const setupSocketHandlers = (io) => {
           return;
         }
         
-        // Add user message to session
+        // 添加带时间戳的用户消息到会话
+        const timestamp = new Date().toISOString();
         Session.addMessage(sessionId, {
           role: 'user',
-          content: message
+          content: message,
+          timestamp: timestamp
         });
         
-        // Get current session history
+        // 获取当前会话历史
         const history = Session.getHistory(sessionId);
         
-        // Process models in sequence
+        // 按顺序处理模型
         await processModelsInSequence(socket, sessionId, history);
         
       } catch (error) {
@@ -63,13 +65,13 @@ const processModelsInSequence = async (socket, sessionId, history) => {
     // Define models to process in order
     const models = [
       {
-        id: 'deepseek',
-        config: config.models.deepseek,
+        id: 'deepseek1',
+        config: config.models.deepseek1,
         order: 1
       },
       {
-        id: 'nova',
-        config: config.models.nova,
+        id: 'deepseek2',
+        config: config.models.deepseek2,
         order: 2
       }
     ];
@@ -80,7 +82,7 @@ const processModelsInSequence = async (socket, sessionId, history) => {
       
       // Add model response to history for next model
       history.push({
-        role: 'assistant',
+        role: 'user',
         modelId: model.id,
         content: modelResponse
       });
@@ -115,82 +117,90 @@ const processModel = async (socket, sessionId, model, history) => {
     try {
       let completeResponse = '';
       
-      // Generate streaming response
+      // 生成流式响应
       const response = await generateStreamingResponse(
         model.config.modelId,
         history,
         model.config.parameters,
         (chunk) => {
-          // Send each chunk to the client
+          // 发送每个块到客户端
           socket.emit('receive_message', {
             modelId: model.id,
             message: chunk,
             isComplete: false,
             sessionId,
-            order: model.order
+            order: model.order,
+            timestamp: new Date().toISOString() // 添加时间戳
           });
         }
       );
       
       completeResponse = response;
       
-      // Check if response is empty or contains an error message
+      // 检查响应是否为空或包含错误消息
       if (!completeResponse || completeResponse.trim() === '' || completeResponse.startsWith('Error:')) {
         console.warn(`Warning: Empty or error response from ${model.id}`);
         if (!completeResponse || completeResponse.trim() === '') {
           completeResponse = `No response was generated from ${model.id}. This could be due to an issue with the model configuration or the input provided.`;
           
-          // Send a manual chunk with the error message
+          // 发送带有错误消息的手动块
           socket.emit('receive_message', {
             modelId: model.id,
             message: completeResponse,
             isComplete: false,
             sessionId,
-            order: model.order
+            order: model.order,
+            timestamp: new Date().toISOString() // 添加时间戳
           });
         }
       }
       
-      // Send final message indicating completion
+      // 发送最终消息表示完成
       socket.emit('receive_message', {
         modelId: model.id,
         message: '',
         isComplete: true,
         sessionId,
-        order: model.order
+        order: model.order,
+        timestamp: new Date().toISOString() // 添加时间戳
       });
       
-      // Add model response to session
+      // 添加模型响应到会话
+      const timestamp = new Date().toISOString();
       Session.addMessage(sessionId, {
         role: 'assistant',
         modelId: model.id,
-        content: completeResponse
+        content: completeResponse,
+        timestamp: timestamp // 添加时间戳
       });
       
       resolve(completeResponse);
     } catch (error) {
       console.error(`Error processing model ${model.id}:`, error);
       
-      // Send error message to client
+      // 发送错误消息到客户端
       const errorMessage = `Error: ${error.message || 'An unknown error occurred'}`;
+      const timestamp = new Date().toISOString();
       socket.emit('receive_message', {
         modelId: model.id,
         message: errorMessage,
         isComplete: false,
         sessionId,
-        order: model.order
+        order: model.order,
+        timestamp: timestamp // 添加时间戳
       });
       
-      // Send completion message
+      // 发送完成消息
       socket.emit('receive_message', {
         modelId: model.id,
         message: '',
         isComplete: true,
         sessionId,
-        order: model.order
+        order: model.order,
+        timestamp: new Date().toISOString() // 添加时间戳
       });
       
-      // Resolve with error message so the sequence can continue
+      // 使用错误消息解析，以便序列可以继续
       resolve(errorMessage);
     }
   });
@@ -199,3 +209,4 @@ const processModel = async (socket, sessionId, model, history) => {
 module.exports = {
   setupSocketHandlers
 };
+

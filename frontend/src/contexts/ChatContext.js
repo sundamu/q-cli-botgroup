@@ -18,19 +18,19 @@ export function ChatProvider({ children }) {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentResponses, setCurrentResponses] = useState({
-    deepseek: { content: '', isComplete: false },
-    nova: { content: '', isComplete: false }
+    deepseek1: { content: '', isComplete: false },
+    deepseek2: { content: '', isComplete: false }
   });
   const [waitingForResponse, setWaitingForResponse] = useState(false);
   const [finalResponses, setFinalResponses] = useState({
-    deepseek: '',
-    nova: ''
+    deepseek1: '',
+    deepseek2: ''
   });
   
   // Create a ref to store the latest finalResponses
   const finalResponsesRef = useRef({
-    deepseek: '',
-    nova: ''
+    deepseek1: '',
+    deepseek2: ''
   });
 
   // Initialize WebSocket connection when authenticated
@@ -107,30 +107,55 @@ export function ChatProvider({ children }) {
       console.log('Final responses from ref:', currentFinalResponses);
       
       // Add the completed responses to the messages array
-      if (currentFinalResponses.deepseek && currentFinalResponses.nova) {
+      if (currentFinalResponses.deepseek1 && currentFinalResponses.deepseek2) {
         console.log('Adding messages to history');
         
-        // Create new message objects with timestamps
-        const deepseekMessage = {
+        // 创建带有时间戳的新消息对象
+        const timestamp = new Date().toISOString();
+        
+        const deepseek1Message = {
           role: 'assistant',
-          modelId: 'deepseek',
-          content: currentFinalResponses.deepseek,
-          timestamp: new Date().toISOString()
+          modelId: 'deepseek1',
+          content: currentFinalResponses.deepseek1,
+          timestamp: timestamp
         };
         
-        const novaMessage = {
+        const deepseek2Message = {
           role: 'assistant',
-          modelId: 'nova',
-          content: currentFinalResponses.nova,
-          timestamp: new Date().toISOString()
+          modelId: 'deepseek2',
+          content: currentFinalResponses.deepseek2,
+          timestamp: timestamp
         };
         
-        console.log('New messages to add:', [deepseekMessage, novaMessage]);
+        console.log('New messages to add:', [deepseek1Message, deepseek2Message]);
         
-        // Update messages state
+        // 更新消息状态，确保不重复添加
         setMessages(prevMessages => {
-          const newMessages = [...prevMessages, deepseekMessage, novaMessage];
-          console.log('New messages array:', newMessages);
+          // 检查是否已经有相同内容的消息
+          const deepseek1Exists = prevMessages.some(msg => 
+            msg.role === 'assistant' && 
+            msg.modelId === 'deepseek1' && 
+            msg.content === currentFinalResponses.deepseek1
+          );
+          
+          const deepseek2Exists = prevMessages.some(msg => 
+            msg.role === 'assistant' && 
+            msg.modelId === 'deepseek2' && 
+            msg.content === currentFinalResponses.deepseek2
+          );
+          
+          // 只添加不存在的消息
+          const newMessages = [...prevMessages];
+          
+          if (!deepseek1Exists && currentFinalResponses.deepseek1) {
+            newMessages.push(deepseek1Message);
+          }
+          
+          if (!deepseek2Exists && currentFinalResponses.deepseek2) {
+            newMessages.push(deepseek2Message);
+          }
+          
+          console.log('Updated messages array:', newMessages);
           return newMessages;
         });
       } else {
@@ -142,20 +167,20 @@ export function ChatProvider({ children }) {
         // Reset waiting state and current responses
         setWaitingForResponse(false);
         setCurrentResponses({
-          deepseek: { content: '', isComplete: false },
-          nova: { content: '', isComplete: false }
+          deepseek1: { content: '', isComplete: false },
+          deepseek2: { content: '', isComplete: false }
         });
         
         // Reset final responses
         setFinalResponses({
-          deepseek: '',
-          nova: ''
+          deepseek1: '',
+          deepseek2: ''
         });
         
         // Reset the ref
         finalResponsesRef.current = {
-          deepseek: '',
-          nova: ''
+          deepseek1: '',
+          deepseek2: ''
         };
       }, 500);
     });
@@ -196,9 +221,42 @@ export function ChatProvider({ children }) {
       
       setCurrentSession(session);
       
-      // Load session history
+      // 重置当前响应状态
+      setCurrentResponses({
+        deepseek1: { content: '', isComplete: false },
+        deepseek2: { content: '', isComplete: false }
+      });
+      
+      // 重置最终响应
+      setFinalResponses({
+        deepseek1: '',
+        deepseek2: ''
+      });
+      
+      // 重置引用
+      finalResponsesRef.current = {
+        deepseek1: '',
+        deepseek2: ''
+      };
+      
+      // 加载会话历史
       const history = await getSessionHistory(sessionId);
-      setMessages(history.history);
+      
+      // 确保消息有正确的时间戳和唯一性
+      const processedMessages = history.history.map(msg => {
+        if (!msg.timestamp) {
+          msg.timestamp = new Date().toISOString();
+        }
+        return msg;
+      });
+      
+      // 按时间戳排序消息
+      const sortedMessages = [...processedMessages].sort((a, b) => {
+        return new Date(a.timestamp) - new Date(b.timestamp);
+      });
+      
+      console.log('加载的会话历史:', sortedMessages);
+      setMessages(sortedMessages);
       
       return session;
     } catch (error) {
@@ -226,20 +284,20 @@ export function ChatProvider({ children }) {
     
     // Reset current responses
     setCurrentResponses({
-      deepseek: { content: '', isComplete: false },
-      nova: { content: '', isComplete: false }
+      deepseek1: { content: '', isComplete: false },
+      deepseek2: { content: '', isComplete: false }
     });
     
     // Reset final responses
     setFinalResponses({
-      deepseek: '',
-      nova: ''
+      deepseek1: '',
+      deepseek2: ''
     });
     
     // Reset the ref
     finalResponsesRef.current = {
-      deepseek: '',
-      nova: ''
+      deepseek1: '',
+      deepseek2: ''
     };
     
     // Send message to server

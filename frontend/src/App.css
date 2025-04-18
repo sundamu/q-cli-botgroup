@@ -4,8 +4,8 @@
   --accent-color: #ff6b6b;
   --dark-color: #333;
   --light-color: #f8f9fa;
-  --deepseek-color: #6a0dad;
-  --nova-color: #ff6b6b;
+  --deepseek1-color: #6a0dad;
+  --deepseek2-color: #4a90e2;
 }
 
 * {
@@ -62,3 +62,4 @@ button {
     transform: rotate(360deg);
   }
 }
+

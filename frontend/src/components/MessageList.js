@@ -9,8 +9,8 @@ function MessageList() {
   const [displayMessages, setDisplayMessages] = useState([]);
   const [key, setKey] = useState(0); // Force re-render key
   const [streamedResponses, setStreamedResponses] = useState({
-    deepseek: { content: '', isComplete: false },
-    nova: { content: '', isComplete: false }
+    deepseek1: { content: '', isComplete: false },
+    deepseek2: { content: '', isComplete: false }
   });
 
   // Force re-render when messages change
@@ -22,7 +22,7 @@ function MessageList() {
 
   // Keep track of streamed responses to show them even after waitingForResponse becomes false
   useEffect(() => {
-    if (currentResponses.deepseek.content || currentResponses.nova.content) {
+    if (currentResponses.deepseek1.content || currentResponses.deepseek2.content) {
       setStreamedResponses(currentResponses);
     }
   }, [currentResponses]);
@@ -62,7 +62,7 @@ function MessageList() {
           ) : (
             <div className={`message-content assistant ${message.modelId}`}>
               <div className="message-header">
-                {message.modelId === 'deepseek' ? 'DeepSeek' : 'Nova'}
+                {message.modelId === 'deepseek1' ? 'DeepSeek 1' : message.modelId === 'deepseek2' ? 'DeepSeek 2' : message.modelId}
               </div>
               <div className="message-text">
                 <ReactMarkdown>{message.content}</ReactMarkdown>
@@ -75,13 +75,13 @@ function MessageList() {
       {/* Current responses being streamed */}
       {waitingForResponse && (
         <>
-          {currentResponses.deepseek.content && (
+          {currentResponses.deepseek1.content && (
             <div className="message assistant-message">
-              <div className="message-content assistant deepseek">
-                <div className="message-header">DeepSeek</div>
+              <div className="message-content assistant deepseek1">
+                <div className="message-header">DeepSeek 1</div>
                 <div className="message-text">
-                  <ReactMarkdown>{currentResponses.deepseek.content}</ReactMarkdown>
-                  {!currentResponses.deepseek.isComplete && (
+                  <ReactMarkdown>{currentResponses.deepseek1.content}</ReactMarkdown>
+                  {!currentResponses.deepseek1.isComplete && (
                     <span className="typing-indicator">●●●</span>
                   )}
                 </div>
@@ -89,13 +89,13 @@ function MessageList() {
             </div>
           )}
           
-          {currentResponses.nova.content && (
+          {currentResponses.deepseek2.content && (
             <div className="message assistant-message">
-              <div className="message-content assistant nova">
-                <div className="message-header">Nova</div>
+              <div className="message-content assistant deepseek2">
+                <div className="message-header">DeepSeek 2</div>
                 <div className="message-text">
-                  <ReactMarkdown>{currentResponses.nova.content}</ReactMarkdown>
-                  {!currentResponses.nova.isComplete && (
+                  <ReactMarkdown>{currentResponses.deepseek2.content}</ReactMarkdown>
+                  {!currentResponses.deepseek2.isComplete && (
                     <span className="typing-indicator">●●●</span>
                   )}
                 </div>
@@ -106,25 +106,25 @@ function MessageList() {
       )}
 
       {/* Show transition messages during the brief period between completion and adding to history */}
-      {!waitingForResponse && streamedResponses.deepseek.content && 
-       !displayMessages.some(m => m.modelId === 'deepseek' && m.content === streamedResponses.deepseek.content) && (
+      {!waitingForResponse && streamedResponses.deepseek1.content && 
+       !displayMessages.some(m => m.modelId === 'deepseek1' && m.content === streamedResponses.deepseek1.content) && (
         <div className="message assistant-message">
-          <div className="message-content assistant deepseek">
-            <div className="message-header">DeepSeek</div>
+          <div className="message-content assistant deepseek1">
+            <div className="message-header">DeepSeek 1</div>
             <div className="message-text">
-              <ReactMarkdown>{streamedResponses.deepseek.content}</ReactMarkdown>
+              <ReactMarkdown>{streamedResponses.deepseek1.content}</ReactMarkdown>
             </div>
           </div>
         </div>
       )}
 
-      {!waitingForResponse && streamedResponses.nova.content && 
-       !displayMessages.some(m => m.modelId === 'nova' && m.content === streamedResponses.nova.content) && (
+      {!waitingForResponse && streamedResponses.deepseek2.content && 
+       !displayMessages.some(m => m.modelId === 'deepseek2' && m.content === streamedResponses.deepseek2.content) && (
         <div className="message assistant-message">
-          <div className="message-content assistant nova">
-            <div className="message-header">Nova</div>
+          <div className="message-content assistant deepseek2">
+            <div className="message-header">DeepSeek 2</div>
             <div className="message-text">
-              <ReactMarkdown>{streamedResponses.nova.content}</ReactMarkdown>
+              <ReactMarkdown>{streamedResponses.deepseek2.content}</ReactMarkdown>
             </div>
           </div>
         </div>

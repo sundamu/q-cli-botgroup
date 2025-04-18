@@ -19,7 +19,8 @@ class Session {
     const session = {
       id: sessionId,
       createdAt: new Date().toISOString(),
-      messages: []
+      messages: [],
+      messageIds: new Set() // 添加一个Set来跟踪消息ID，防止重复
     };
     
     sessions.set(sessionId, session);
@@ -47,6 +48,21 @@ class Session {
   }
 
   /**
+   * 生成消息ID
+   * @param {Object} message - 消息对象
+   * @returns {string} 消息ID
+   */
+  static generateMessageId(message) {
+    // 根据消息内容、角色和时间戳生成唯一ID
+    const content = message.content || '';
+    const role = message.role || '';
+    const modelId = message.modelId || '';
+    const timestamp = message.timestamp || new Date().toISOString();
+    
+    return `${role}-${modelId}-${content.substring(0, 20)}-${timestamp}`;
+  }
+
+  /**
    * Add a message to a session
    * @param {string} sessionId - The session ID
    * @param {Object} message - The message to add
@@ -56,7 +72,25 @@ class Session {
     const session = sessions.get(sessionId);
     if (!session) return false;
     
+    // 确保消息有时间戳
+    if (!message.timestamp) {
+      message.timestamp = new Date().toISOString();
+    }
+    
+    // 生成消息ID
+    const messageId = this.generateMessageId(message);
+    
+    // 检查消息是否已存在
+    if (session.messageIds.has(messageId)) {
+      console.log('消息已存在，跳过添加:', messageId);
+      return true; // 消息已存在，但不视为错误
+    }
+    
+    // 添加消息并记录ID
     session.messages.push(message);
+    session.messageIds.add(messageId);
+    
+    console.log(`添加消息到会话 ${sessionId}:`, message);
     return true;
   }
 
@@ -69,7 +103,8 @@ class Session {
     const session = sessions.get(sessionId);
     if (!session) return null;
     
-    return session.messages;
+    // 返回消息的深拷贝，防止外部修改
+    return JSON.parse(JSON.stringify(session.messages));
   }
 }
 
