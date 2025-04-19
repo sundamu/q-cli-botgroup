@@ -58,14 +58,10 @@ export function ChatProvider({ children }) {
     });
 
     socketInstance.on('receive_message', (data) => {
-      const { modelId, message, isComplete } = data;
-      
-      console.log(`Received message from ${modelId}:`, message);
-      
+      const { modelId, message, isComplete } = data;     
       // Update current responses for streaming display
       setCurrentResponses(prev => {
         const updatedContent = prev[modelId].content + message;
-        console.log(`Updated ${modelId} content:`, updatedContent);
         return {
           ...prev,
           [modelId]: {
@@ -87,8 +83,7 @@ export function ChatProvider({ children }) {
           ...finalResponsesRef.current,
           [modelId]: updatedFinal[modelId]
         };
-        
-        console.log(`Updated final ${modelId}:`, updatedFinal[modelId]);
+
         return updatedFinal;
       });
     });
@@ -109,6 +104,8 @@ export function ChatProvider({ children }) {
       // Add the completed responses to the messages array
       if (currentFinalResponses.deepseek1 && currentFinalResponses.deepseek2) {
         console.log('Adding messages to history');
+
+        setWaitingForResponse(false);
         
         // 创建带有时间戳的新消息对象
         const timestamp = new Date().toISOString();
@@ -130,28 +127,14 @@ export function ChatProvider({ children }) {
         console.log('New messages to add:', [deepseek1Message, deepseek2Message]);
         
         // 更新消息状态，确保不重复添加
-        setMessages(prevMessages => {
-          // 检查是否已经有相同内容的消息
-          const deepseek1Exists = prevMessages.some(msg => 
-            msg.role === 'assistant' && 
-            msg.modelId === 'deepseek1' && 
-            msg.content === currentFinalResponses.deepseek1
-          );
-          
-          const deepseek2Exists = prevMessages.some(msg => 
-            msg.role === 'assistant' && 
-            msg.modelId === 'deepseek2' && 
-            msg.content === currentFinalResponses.deepseek2
-          );
-          
-          // 只添加不存在的消息
+        setMessages(prevMessages => {          
           const newMessages = [...prevMessages];
           
-          if (!deepseek1Exists && currentFinalResponses.deepseek1) {
+          if (currentFinalResponses.deepseek1) {
             newMessages.push(deepseek1Message);
           }
           
-          if (!deepseek2Exists && currentFinalResponses.deepseek2) {
+          if (currentFinalResponses.deepseek2) {
             newMessages.push(deepseek2Message);
           }
           
@@ -165,16 +148,10 @@ export function ChatProvider({ children }) {
       // Wait a bit before resetting the state to ensure the UI has time to update
       setTimeout(() => {
         // Reset waiting state and current responses
-        setWaitingForResponse(false);
+        
         setCurrentResponses({
           deepseek1: { content: '', isComplete: false },
           deepseek2: { content: '', isComplete: false }
-        });
-        
-        // Reset final responses
-        setFinalResponses({
-          deepseek1: '',
-          deepseek2: ''
         });
         
         // Reset the ref

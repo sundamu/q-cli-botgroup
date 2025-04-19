@@ -15,7 +15,6 @@ function MessageList() {
 
   // Force re-render when messages change
   useEffect(() => {
-    console.log("Messages updated:", messages);
     setDisplayMessages([...messages]);
     setKey(prevKey => prevKey + 1); // Force re-render
   }, [messages]);
@@ -27,17 +26,15 @@ function MessageList() {
     }
   }, [currentResponses]);
 
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    console.log("Display messages or responses updated:", { displayMessages, currentResponses });
+   // Auto-scroll to bottom when messages change
+   useEffect(() => {
     scrollToBottom();
   }, [displayMessages, currentResponses, key]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
   };
 
-  // Debug render
   console.log("Rendering MessageList with key:", key, {
     displayMessages,
     messages,
@@ -103,33 +100,7 @@ function MessageList() {
             </div>
           )}
         </>
-      )}
-
-      {/* Show transition messages during the brief period between completion and adding to history */}
-      {!waitingForResponse && streamedResponses.deepseek1.content && 
-       !displayMessages.some(m => m.modelId === 'deepseek1' && m.content === streamedResponses.deepseek1.content) && (
-        <div className="message assistant-message">
-          <div className="message-content assistant deepseek1">
-            <div className="message-header">DeepSeek 1</div>
-            <div className="message-text">
-              <ReactMarkdown>{streamedResponses.deepseek1.content}</ReactMarkdown>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!waitingForResponse && streamedResponses.deepseek2.content && 
-       !displayMessages.some(m => m.modelId === 'deepseek2' && m.content === streamedResponses.deepseek2.content) && (
-        <div className="message assistant-message">
-          <div className="message-content assistant deepseek2">
-            <div className="message-header">DeepSeek 2</div>
-            <div className="message-text">
-              <ReactMarkdown>{streamedResponses.deepseek2.content}</ReactMarkdown>
-            </div>
-          </div>
-        </div>
-      )}
-
+      )}   
       <div ref={messagesEndRef} />
     </div>
   );
