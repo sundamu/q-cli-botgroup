@@ -79,11 +79,11 @@
 }
 
 .message-content.deepseek2 {
-  border-left: 4px solid #4a90e2;
+  border-left: 4px solid #238e7a;
 }
 
 .message-content.deepseek2 .message-header {
-  color: #4a90e2;
+  color: #238e7a;
 }
 
 /* Code block styling */
